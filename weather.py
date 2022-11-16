@@ -10,13 +10,13 @@ from dotenv import load_dotenv
 dotenv_path = join(dirname(realpath(__file__)), ".env")
 load_dotenv(dotenv_path)
 
+API_KEY = os.environ.get("OPEN_WEATHER_MAP_API_KEY")
 GEOCODING_BASE_URL = "http://api.openweathermap.org/geo/1.0/"
 WEATHER_BASE_URL = "http://api.openweathermap.org/data/2.5/"
-API_KEY = os.environ.get("OPEN_WEATHER_MAP_API_KEY")
 
 
 class Geolocation:
-    def __init__(self, city_name, country_code):
+    def __init__(self, city_name, country_code=None):
         self._city_name = None
         self._country_code = None
         self._latitude = None
@@ -46,8 +46,12 @@ class Geolocation:
         request_url = (
             f"{GEOCODING_BASE_URL}direct?q={city_name}&limit={limit}&appid={API_KEY}"
         )
-        print(request_url)
-        response = requests.get(request_url).json()[0]  # Get first response
+
+        try:
+            response = requests.get(request_url).json()[0]  # Get first response
+        except IndexError:
+            raise ValueError("Bad API request")
+
         del response["local_names"]
         self._city_name = response["name"]
         self._country_code = response["country"]
@@ -57,16 +61,34 @@ class Geolocation:
 
 
 class Weather:
+    _units = "metric"
+
     def __init__(self, longitude, latitude):
         self._longitude = longitude
         self._latitude = latitude
+        self._weather_main = None
+        self._weather_description = None
+        self._temp = None
+        self._feels_like = None
+        self._temp_min = None
+        self._temp_max = None
+        self._humidity = None
+        self._wind_speed = None
 
     def current_weather(self):
-        units = "metric"
-        request_url = f"{WEATHER_BASE_URL}weather?lat={self._latitude}&lon={self._longitude}&units={units}&appid={API_KEY}"
+        request_url = f"{WEATHER_BASE_URL}weather?lat={self._latitude}&lon={self._longitude}&units={Weather._units}&appid={API_KEY}"
 
         response = requests.get(request_url).json()
         print(json.dumps(response, indent=4))
+        self._weather_main = response["weather"][0]["main"]
+        self._weather_description = response["weather"][0]["description"]
+        self._temp = response["main"]["temp"]
+        self._feels_like = response["main"]["feels_like"]
+        self._temp_min = response["main"]["temp_min"]
+        self._temp_max = response["main"]["temp_max"]
+        self._humidity = response["main"]["humidity"]
+        self._wind_speed = response["wind"]["speed"]
+        # print(self._weather_main)
 
 
 def main():
@@ -78,7 +100,13 @@ def main():
         for x in input('usage: "<city name>, <country code>"\n').lower().split(",")
     ]
     print(city_name)
-    geolocation = Geolocation(city_name[0], city_name[1])
+    if len(city_name) > 1:
+        geolocation = Geolocation(city_name[0], city_name[1])
+    elif len(city_name) == 1:
+        geolocation = Geolocation(city_name[0])
+    else:
+        raise IndexError("there was no input")
+
     print(
         geolocation.city_name,
         geolocation.country_code,
