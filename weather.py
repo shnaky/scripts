@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import requests
-import json
 import os
 from os.path import join, dirname, realpath
 from dotenv import load_dotenv
+
+# import json
 
 # load .env file to get api key
 dotenv_path = join(dirname(realpath(__file__)), ".env")
@@ -59,8 +60,26 @@ class Geolocation:
         self._longitude = response["lon"]
         # print(json.dumps(response, indent=4))
 
+    # __repr__ for returning how the class was created
+    def __repr__(self):
+        # don't forget to put "" to notify that the arguments of the class are strings
+        return '{self.__class__.__name__}("{self._city_name}", "{self._country_code}")'.format(
+            self=self
+        )
+
+    # __str__ for returning human readable class representation as string
+    def __str__(self):
+        return """{self.__class__.__name__}:
+            City Name: {self._city_name}
+            Country Code: {self._country_code}
+            Latitude: {self._latitude}
+            Longitude: {self._longitude}""".format(
+            self=self
+        )
+
 
 class Weather:
+    # static class variables
     _units = "metric"
 
     def __init__(self, longitude, latitude):
@@ -79,7 +98,6 @@ class Weather:
         request_url = f"{WEATHER_BASE_URL}weather?lat={self._latitude}&lon={self._longitude}&units={Weather._units}&appid={API_KEY}"
 
         response = requests.get(request_url).json()
-        print(json.dumps(response, indent=4))
         self._weather_main = response["weather"][0]["main"]
         self._weather_description = response["weather"][0]["description"]
         self._temp = response["main"]["temp"]
@@ -90,6 +108,24 @@ class Weather:
         self._wind_speed = response["wind"]["speed"]
         # print(self._weather_main)
 
+    def __repr__(self):
+        return "{self.__class__.__name__}({self._longitude}, {self._latitude})".format(
+            self=self
+        )
+
+    def __str__(self):
+        return """{self.__class__.__name__}:
+            Weather: {self._weather_main}
+            Description: {self._weather_description}
+            Temperature: {self._temp}
+            Feels Like: {self._feels_like}
+            Min Temperature: {self._temp_min}
+            Max Temperature: {self._temp_max}
+            Humidity: {self._humidity}
+            Wind Speed: {self._wind_speed}""".format(
+            self=self
+        )
+
 
 def main():
     print("city name (required), country code (optional)")
@@ -99,7 +135,6 @@ def main():
         x.strip()
         for x in input('usage: "<city name>, <country code>"\n').lower().split(",")
     ]
-    print(city_name)
     if len(city_name) > 1:
         geolocation = Geolocation(city_name[0], city_name[1])
     elif len(city_name) == 1:
@@ -107,14 +142,13 @@ def main():
     else:
         raise IndexError("there was no input")
 
-    print(
-        geolocation.city_name,
-        geolocation.country_code,
-        geolocation.latitude,
-        geolocation.longitude,
-    )
+    print()
+    print(geolocation)  # call geolocation __str__
+    # print(repr(geolocation))
+    print()
     weather = Weather(geolocation.longitude, geolocation.latitude)
     weather.current_weather()
+    print(weather)
 
 
 if __name__ == "__main__":
