@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import requests
 import os
@@ -16,7 +17,7 @@ GEOCODING_BASE_URL = "http://api.openweathermap.org/geo/1.0/"
 WEATHER_BASE_URL = "http://api.openweathermap.org/data/2.5/"
 
 
-class Geolocation:
+class Geolocation(object):
     def __init__(self, city_name, country_code=None):
         self._city_name = None
         self._country_code = None
@@ -63,22 +64,18 @@ class Geolocation:
     # __repr__ for returning how the class was created
     def __repr__(self):
         # don't forget to put "" to notify that the arguments of the class are strings
-        return '{self.__class__.__name__}("{self._city_name}", "{self._country_code}")'.format(
-            self=self
-        )
+        return f"{self.__class__.__name__}({self._city_name!r}, {self._country_code!r})"
 
     # __str__ for returning human readable class representation as string
     def __str__(self):
-        return """{self.__class__.__name__}:
+        return f"""{self.__class__.__name__}:
             City Name: {self._city_name}
             Country Code: {self._country_code}
             Latitude: {self._latitude}
-            Longitude: {self._longitude}""".format(
-            self=self
-        )
+            Longitude: {self._longitude}"""
 
 
-class Weather:
+class Weather(object):
     # static class variables
     _units = "metric"
 
@@ -109,9 +106,7 @@ class Weather:
         # print(self._weather_main)
 
     def __repr__(self):
-        return "{self.__class__.__name__}({self._longitude}, {self._latitude})".format(
-            self=self
-        )
+        return f"{self.__class__.__name__}({self._longitude!r}, {self._latitude!r})"
 
     def __str__(self):
         return """{self.__class__.__name__}:
@@ -149,6 +144,7 @@ def main():
     weather = Weather(geolocation.longitude, geolocation.latitude)
     weather.current_weather()
     print(weather)
+    # print(repr(weather))
 
 
 if __name__ == "__main__":

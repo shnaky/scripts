@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """Prints movie information using the Omdb API.
 
 Usage:
